@@ -1,0 +1,8 @@
+checkpoints/
+dataset/
+generation/
+glove/
+.vscode/
+
+*.pyc
+__pycache__/

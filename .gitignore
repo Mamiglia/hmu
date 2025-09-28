@@ -6,3 +6,5 @@ glove/
 
 *.pyc
 __pycache__/
+
+wandb

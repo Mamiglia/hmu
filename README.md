@@ -1,0 +1,554 @@
+# Human Motion Unlearning (HMU)
+
+This repository implements unlearning algorithms for text-to-motion generation models, with evaluation on HumanML3D and Motion-X datasets. The goal is to selectively remove specific motion concepts (e.g., violent actions, specific gestures) from pre-trained models while preserving overall motion generation quality.
+
+## Overview
+
+The repository provides:
+- **Multiple unlearning methods**: LCR (Latent Code Removal), UCE (Unified Concept Erasure), RECE (Reinforced Concept Erasure), and fine-tuning
+- **Evaluation pipeline**: Comprehensive metrics including FID, diversity, multimodality, and motion-text matching scores
+- **Dataset splitting tools**: Automated dataset partitioning based on text keywords and TMR-based filtering
+- **Generation utilities**: Batch motion generation with visualization
+
+## Table of Contents
+
+- [Setup](#setup)
+- [Repository Structure](#repository-structure)
+- [Datasets and Checkpoints](#datasets-and-checkpoints)
+- [Quick Start](#quick-start)
+- [Usage](#usage)
+  - [Dataset Preparation](#dataset-preparation)
+  - [Training](#training)
+  - [Unlearning](#unlearning)
+  - [Evaluation](#evaluation)
+  - [Generation](#generation)
+- [Configuration](#configuration)
+- [Citation](#citation)
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Python 3.8+
+- CUDA-capable GPU (recommended)
+- Conda or virtualenv
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Mamiglia/hmu.git
+   cd hmu
+   ```
+
+2. **Clone dependencies**
+   
+   This project depends on two external repositories that should be cloned into the `src/` directory:
+   
+   ```bash
+   # Clone MoMask (text-to-motion model)
+   cd src
+   git clone https://github.com/Mamiglia/momask-codes.git
+   
+   # Clone TMR (motion retrieval model)
+   git clone https://github.com/Mamiglia/TMR.git
+   cd ..
+   ```
+
+3. **Create and activate conda environment**
+   ```bash
+   conda create -n momask python=3.8
+   conda activate momask
+   ```
+
+4. **Install dependencies**
+   ```bash
+   # Install MoMask requirements
+   pip install -r src/momask_codes/requirements.txt
+   
+   # For TMR (switch to TMR environment when needed)
+   conda create -n TMR python=3.9
+   conda activate TMR
+   pip install -r src/TMR/requirements.txt
+   ```
+
+5. **Set environment variable**
+   
+   Add this to your `~/.bashrc` or `~/.zshrc`:
+   ```bash
+   export CONDA_PATH=/path/to/your/conda  # e.g., ~/miniconda3
+   ```
+
+---
+
+## Repository Structure
+
+```
+hmu/
+├── assets/                      # Configuration files and splits
+│   ├── splits.json             # Forget/retain keyword definitions
+│   ├── qualitatives_*.txt      # Prompts for qualitative evaluation
+│   └── codes/                  # Cached VQ-VAE codes
+├── checkpoints/                # Model checkpoints (download separately)
+│   ├── HumanML3D/
+│   │   ├── rvq/               # VQ-VAE model
+│   │   ├── mtrans/            # Mask Transformer model
+│   │   └── rtrans/            # Residual Transformer model
+│   └── Motion-X/              # Same structure for Motion-X
+├── dataset/                    # Datasets (download separately)
+│   ├── HumanML3D/
+│   └── Motion-X/
+├── generation/                 # Generated motions and results
+├── glove/                      # GloVe embeddings (download separately)
+├── scripts/                    # Executable scripts
+│   ├── train/                 # Training scripts
+│   ├── eval/                  # Evaluation scripts
+│   └── utils/                 # Utility scripts
+├── src/                        # Source code
+│   ├── momask_codes/          # MoMask implementation (cloned)
+│   ├── TMR/                   # TMR retrieval model (cloned)
+│   ├── methods/               # Unlearning methods
+│   │   ├── lcr.py            # Latent Code Removal
+│   │   ├── rece.py           # RECE and UCE methods
+│   │   └── gen_t2m_batch.py  # Batch generation
+│   └── eval/                  # Evaluation utilities
+│       ├── t2m_unlearn.py    # Main evaluation script
+│       ├── eval_fn_t2m.py    # Evaluation functions
+│       └── ncs_compute.py    # NCS metric computation
+└── wandb/                     # Weights & Biases logs
+```
+
+---
+
+## Datasets and Checkpoints
+
+### Expected Directory Structure
+
+After downloading, your directories should look like:
+
+```
+checkpoints/
+├── HumanML3D/
+│   ├── rvq/
+│   │   ├── model/
+│   │   │   └── base.tar
+│   │   ├── meta/
+│   │   │   ├── mean.npy
+│   │   │   └── std.npy
+│   │   └── opt.txt
+│   ├── mtrans/
+│   │   ├── model/
+│   │   │   └── base.tar
+│   │   └── opt.txt
+│   ├── rtrans/
+│   │   ├── model/
+│   │   │   └── base.tar
+│   │   └── opt.txt
+│   └── Comp_v6_KLD005/         # Evaluator model
+│       ├── model/
+│       └── opt.txt
+└── Motion-X/                    # Same structure
+
+dataset/
+├── HumanML3D/
+│   ├── new_joint_vecs/          # Motion features
+│   ├── texts/                   # Text descriptions
+│   ├── Mean.npy
+│   ├── Std.npy
+│   ├── train.txt                # Split files
+│   ├── val.txt
+│   ├── test.txt
+│   └── kw_splits/              # Generated by split scripts
+└── Motion-X/                    # Same structure
+
+glove/
+└── glove.840B.300d.npy          # GloVe embeddings
+```
+
+### Downloads
+
+1. **Pre-trained Checkpoints**
+   - Download from MoMask repository: [momask-codes checkpoints](https://github.com/Mamiglia/momask-codes)
+   - Place in `checkpoints/HumanML3D/` and `checkpoints/Motion-X/`
+
+2. **Datasets**
+   - **HumanML3D**: [Official repository](https://github.com/EricGuo5513/HumanML3D)
+   - **Motion-X**: [Official repository](https://github.com/IDEA-Research/Motion-X)
+   - Place in respective `dataset/` folders
+
+3. **GloVe Embeddings**
+   - Download GloVe 840B 300d embeddings
+   - Convert to `.npy` format and place in `glove/`
+
+4. **TMR Checkpoints**
+   - Download from [TMR repository](https://github.com/Mathux/TMR)
+   - Place in `src/TMR/logs/`
+
+---
+
+## Quick Start
+
+### 1. Split Dataset
+```bash
+# Create forget/retain splits for violence concept on HumanML3D
+bash scripts/utils/split_dataset.sh \
+    --main_split train_val \
+    --split_name violence \
+    --dataset HumanML3D
+```
+
+### 2. Apply Unlearning
+```bash
+# Example: LCR method with 16 codes pruned
+bash scripts/eval/lcr.sh violence HumanML3D
+```
+
+### 3. Evaluate
+The evaluation is automatically run by the unlearning scripts, but you can run it separately:
+```bash
+bash scripts/eval/t2m_unlearn.sh \
+    --dataset HumanML3D \
+    --split_name violence \
+    --ckpt lcr16_HumanML3D_violence.tar \
+    --method LCR \
+    --name LCR16
+```
+
+---
+
+## Usage
+
+### Dataset Preparation
+
+#### Basic Splitting
+Split the dataset into forget and retain sets based on keywords:
+
+```bash
+bash scripts/utils/split_dataset.sh \
+    --main_split train_val \
+    --split_name violence \
+    --dataset HumanML3D \
+    --min_occurence 1
+```
+
+**Arguments:**
+- `--main_split`: Base split to divide (e.g., `train_val`, `test`)
+- `--split_name`: Concept name defined in `assets/splits.json`
+- `--dataset`: Dataset name (`HumanML3D` or `Motion-X`)
+- `--min_occurence`: Minimum keyword occurrences to mark as forget set
+
+**Output:**
+- `dataset/HumanML3D/kw_splits/train_val-w-violence.txt` (forget set)
+- `dataset/HumanML3D/kw_splits/train_val-wo-violence.txt` (retain set)
+
+#### TMR-Based Filtering
+Use motion retrieval to refine splits:
+
+```bash
+bash scripts/utils/split_dataset.sh \
+    --main_split train_val \
+    --split_name violence \
+    --dataset HumanML3D \
+    --tmr \
+    --tmr_min_occurence 8 \
+    --max_rank 10
+```
+
+**Additional Arguments:**
+- `--tmr`: Enable TMR-based filtering
+- `--tmr_min_occurence`: Minimum similar motions in top-k to classify as forget
+- `--max_rank`: Number of similar motions to retrieve
+
+---
+
+### Training
+
+#### Train from Scratch
+
+1. **Train VQ-VAE**
+   ```bash
+   cd src/momask_codes
+   python train_vq.py \
+       --name rvq \
+       --dataset_name HumanML3D \
+       --batch_size 256 \
+       --num_quantizers 6 \
+       --max_epoch 50
+   ```
+
+2. **Train Mask Transformer**
+   ```bash
+   python train_t2m_transformer.py \
+       --name mtrans \
+       --dataset_name HumanML3D \
+       --batch_size 64 \
+       --vq_name rvq
+   ```
+
+3. **Train Residual Transformer**
+   ```bash
+   python train_res_transformer.py \
+       --name rtrans \
+       --dataset_name HumanML3D \
+       --batch_size 64 \
+       --vq_name rvq \
+       --cond_drop_prob 0.2 \
+       --share_weight
+   ```
+
+#### Fine-tuning on Retain Set
+
+```bash
+bash scripts/train/fintetune_t2m.sh
+```
+
+Modify the script to specify:
+- Dataset split (change `dataset_name` to use cleaned splits)
+- Checkpoint to continue from (`--is_continue`)
+
+---
+
+### Unlearning
+
+#### LCR (Latent Code Removal)
+Prunes VQ-VAE codebook entries associated with forget concepts:
+
+```bash
+# Run with default settings (4, 8, 16, 32, 64 codes)
+bash scripts/eval/lcr.sh violence HumanML3D
+
+# Or run manually
+python -m src.methods.lcr \
+    --dataset_name HumanML3D \
+    --run_name lcr16_violence \
+    --split dataset/HumanML3D/kw_splits/train_val-w-violence \
+    --code_prune 16 \
+    --ckpt base.tar \
+    --codes_csv assets/HumanML3D_codes.csv
+```
+
+**Key Arguments:**
+- `--code_prune`: Number of codes to prune
+- `--layer_prune`: Number of VQ layers to prune (default: 1)
+- `--alpha`: Pruning aggressiveness (default: 1.0)
+- `--orth`: Use orthogonal pruning instead of replacement
+
+#### UCE and RECE
+Modifies transformer embeddings to erase concepts:
+
+```bash
+bash scripts/eval/rece_uce.sh violence HumanML3D
+
+# Or run manually
+python -m src.methods.rece \
+    --dataset_name HumanML3D \
+    --name mtrans \
+    --res_name rtrans \
+    --vq_name rvq \
+    --forget_text kick punch hit beat \
+    --retain_text walk run jump sit stand \
+    --target_text "" \
+    --epochs 1 \
+    --preserve_scale 1.0 \
+    --ckpt base.tar
+```
+
+**Key Arguments:**
+- `--forget_text`: Space-separated list of concepts to forget
+- `--retain_text`: Concepts to preserve
+- `--preserve_scale`: Weight for preservation loss
+- `--epochs`: Number of RECE iterations (0 = UCE only)
+
+---
+
+### Evaluation
+
+#### Comprehensive Evaluation
+The main evaluation script computes all metrics:
+
+```bash
+bash scripts/eval/t2m_unlearn.sh \
+    --dataset HumanML3D \
+    --split_name violence \
+    --ckpt lcr16_HumanML3D_violence.tar \
+    --method LCR \
+    --name LCR16
+```
+
+**Metrics Computed:**
+- **FID**: Fréchet Inception Distance
+- **Diversity**: Motion diversity within generated samples
+- **Multimodality**: Variation for same text prompt
+- **R-Precision**: Text-motion retrieval accuracy
+- **Matching Score**: Semantic similarity
+- **NCS**: Nearest Concept Similarity (forget quality)
+
+#### Manual Evaluation
+
+```bash
+# Evaluate on retain set
+python -m src.eval.t2m_unlearn \
+    --dataset_name HumanML3D \
+    --name mtrans \
+    --res_name rtrans \
+    --vq_name rvq \
+    --ckpt model.tar \
+    --split kw_splits/test-wo-violence \
+    --repeat_times 10
+
+# Evaluate on forget set
+python -m src.eval.t2m_unlearn \
+    --dataset_name HumanML3D \
+    --name mtrans \
+    --res_name rtrans \
+    --vq_name rvq \
+    --ckpt model.tar \
+    --split kw_splits/test-w-violence \
+    --toxic_terms kick punch hit \
+    --repeat_times 10
+```
+
+---
+
+### Generation
+
+#### Batch Generation
+Generate motions for dataset splits:
+
+```bash
+python -m src.methods.gen_t2m_batch \
+    --dataset_name HumanML3D \
+    --name mtrans \
+    --res_name rtrans \
+    --vq_name rvq \
+    --run_name my_generation \
+    --ckpt base.tar \
+    --split test \
+    --batch_size 512 \
+    --repeat_times 10 \
+    --skip_viz
+```
+
+**Output:** Generated motions saved to `generation/<run_name>/`
+
+#### Text Prompts Generation
+Generate from custom text prompts:
+
+```bash
+python -m src.momask_codes.gen_t2m \
+    --dataset_name HumanML3D \
+    --name mtrans \
+    --res_name rtrans \
+    --vq_name rvq \
+    --run_name qualitative \
+    --text_path assets/qualitatives_HumanML3D.txt \
+    --ckpt base.tar \
+    --repeat_times 3
+```
+
+**Output:** Motions and visualizations in `generation/<run_name>/`
+
+---
+
+## Configuration
+
+### Dataset Splits Configuration
+Edit `assets/splits.json` to define forget concepts:
+
+```json
+{
+  "splits": {
+    "HumanML3D": {
+      "violence": {
+        "forget_texts": ["kick", "punch", "hit", "beat", "boxing"]
+      },
+      "jump_leap_hop": {
+        "forget_texts": ["jump", "leap", "hop"]
+      }
+    }
+  }
+}
+```
+
+### Model Checkpoints
+- `base.tar`: Original pre-trained model
+- `net_best_fid.tar`: Best model by FID score
+- `latest.tar`: Most recent training checkpoint
+
+### Key Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/eval/t2m_unlearn.sh` | Complete evaluation pipeline |
+| `scripts/eval/lcr.sh` | LCR unlearning and evaluation |
+| `scripts/eval/rece_uce.sh` | UCE/RECE unlearning and evaluation |
+| `scripts/utils/split_dataset.sh` | Dataset splitting with TMR |
+| `scripts/train/batch_t2m_clean.sh` | Full training pipeline |
+
+---
+
+## Environment Variables
+
+Set these in your shell profile:
+```bash
+export CONDA_PATH=/path/to/conda
+export WANDB_PROJECT=hmu2              # W&B project name
+export WANDB_MODE=online               # or 'disabled' or 'offline'
+```
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Import errors from momask_codes or TMR**
+   - Ensure both repositories are cloned into `src/`
+   - Check conda environment is activated
+
+2. **Missing checkpoints or datasets**
+   - Verify file structure matches expected layout
+   - Check `opt.txt` files contain correct paths
+
+3. **CUDA out of memory**
+   - Reduce `--batch_size`
+   - Use gradient accumulation for training
+
+4. **TMR retrieval fails**
+   - Switch to TMR conda environment
+   - Verify TMR checkpoints are downloaded
+
+---
+
+## Citation
+
+If you use this code, please cite:
+```bibtex
+@article{your-paper,
+  title={Unlearning in Text-to-Motion Generation},
+  author={Your Names},
+  journal={Your Venue},
+  year={2024}
+}
+```
+
+---
+
+## License
+
+This project builds upon:
+- [MoMask](https://github.com/EricGuo5513/momask-codes) - MIT License
+- [TMR](https://github.com/Mathux/TMR) - MIT License
+
+See individual repositories for their respective licenses.
+
+---
+
+## Acknowledgements
+
+This work builds upon:
+- MoMask for text-to-motion generation
+- TMR for motion retrieval
+- HumanML3D and Motion-X datasets

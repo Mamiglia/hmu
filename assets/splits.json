@@ -1,0 +1,62 @@
+{
+    "splits": {
+        "HumanML3D": {
+            "crawl_creep_slide": {
+                "forget_texts": ["crawl", "creep", "slide"]
+            },
+            "jump_leap_hop": {
+                "forget_texts": ["jump", "leap", "hop"]
+            },
+            "kick": {
+                "forget_texts": ["kick"]
+            },
+            "punch_jab_box_hit_beat": {
+                "forget_texts": ["punch", "hit", "beat","boxe", "boxing", "jab", "uppercut","hook"]
+            },
+            "zombie": {
+                "forget_texts": ["zombie", "dead"]
+            },
+            "none": {
+                "forget_texts": ["úüñ"]
+            },
+            "duck_squat": {
+                "forget_texts": ["duck", "squat"]
+            },
+            "throw": {
+                "forget_texts": ["throw"]
+            },
+            "violence": {
+                "forget_texts": ["kick", "punch", "hit", "beat","boxe", "boxing", "jab", "uppercut","hook"]
+            }
+        },
+        "Motion-X": {
+            "crawl_creep_slide": {
+                "forget_texts": ["crawl", "creep", "slide"]
+            },
+            "jump_leap_hop": {
+                "forget_texts": ["jump", "leap", "hop"]
+            },
+            "kick": {
+                "forget_texts": ["kick"]
+            },
+            "punch_jab_box_hit_beat": {
+                "forget_texts": ["punch", "jab", "box", "hit", "beat"]
+            },
+            "weapons": {
+                "forget_texts": ["sword", "stab", "slash","weapon"]
+            },
+            "martial_arts": {
+                "forget_texts": ["kungfu", "taekwondo", "karate", "martial"]
+            },
+            "gun_shoot": {
+                "forget_texts": ["gun", "shoot", "firearm"]
+            },
+            "violence": {
+                "forget_texts": ["punch", "jab", "box", "hit", "beat", "kick", "taekwondo", "karate", "kungfu", "sword", "stab", "slash", "weapon", "gun", "shoot", "firearm"]
+            },
+            "zombie": {
+                "forget_texts": ["zombie", "dead"]
+            }
+        }
+    }
+}

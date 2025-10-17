@@ -1,0 +1,6 @@
+[submodule "src/momask_codes"]
+	path = src/momask_codes
+	url = https://github.com/Mamiglia/momask-codes.git
+[submodule "src/TMR"]
+	path = src/TMR
+	url = https://github.com/Mamiglia/TMR.git

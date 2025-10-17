@@ -25,7 +25,7 @@ epochs=1
 
 # Set forget_texts based on split_name
 forget_texts=$(jq --arg dataset "$dataset" --arg split_name "$split_name" -r '.splits[$dataset][$split_name].forget_texts[]' assets/splits.json | tr '\n' ' ')
-
+echo $forget_texts
 retain_texts="walk walking run running jog step turn dance dancing move moving steps raise arm leg forward front backward sit dodge moves"
 target_text=""
 
@@ -33,7 +33,7 @@ data_root="dataset/${dataset}"
 
 seed=$RANDOM
 
-for preserve_scale in 0.5 0.1; do
+for preserve_scale in 0.75 1 1.5 2 5; do
     echo ">>> Unlearning MoMask with UCE and RECE on $dataset with preserve_scale=$preserve_scale..."
     START=$(date +%s%3N)
     python -m src.methods.rece \

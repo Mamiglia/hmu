@@ -651,50 +651,6 @@ export WANDB_TAGS="$method,$split_name,$dataset"
 
 ---
 
-## Debugging Tips
-
-### Enable Debug Mode
-```python
-import debugpy
-debugpy.listen(("localhost", 5678))
-print("Waiting for debugger attach")
-debugpy.wait_for_client()
-```
-
-### Check Model Outputs
-```python
-# In generation loop
-print(f"Text embedding shape: {text_emb.shape}")
-print(f"Base codes shape: {base_codes.shape}")
-print(f"Full codes shape: {full_codes.shape}")
-print(f"Motion shape: {pred_motion.shape}")
-```
-
-### Verify Checkpoint Loading
-```python
-checkpoint = torch.load('path/to/model.tar')
-print("Keys:", checkpoint.keys())
-print("Epoch:", checkpoint.get('ep', 'N/A'))
-if 'removed_codes' in checkpoint:
-    print("LCR codes removed:", checkpoint['removed_codes'])
-```
-
-### Profile Performance
-```python
-import torch.profiler as profiler
-
-with profiler.profile(
-    activities=[profiler.ProfilerActivity.CPU, profiler.ProfilerActivity.CUDA],
-    record_shapes=True
-) as prof:
-    # Your code here
-    pred_motion = generate_motion(...)
-
-print(prof.key_averages().table(sort_by="cuda_time_total"))
-```
-
----
-
 ## Common Pitfalls
 
 1. **Conda Environment Switching**
@@ -719,55 +675,5 @@ print(prof.key_averages().table(sort_by="cuda_time_total"))
 
 ---
 
-## Testing
-
-### Unit Testing
-Create test files in `tests/`:
-
-```python
-# tests/test_lcr.py
-import pytest
-from src.methods.lcr import topk_codes, count_codes
-
-def test_topk_codes():
-    forget_counts = np.array([10, 5, 3, 1])
-    retain_counts = np.array([2, 10, 5, 10])
-    result = topk_codes(forget_counts, retain_counts, k=2)
-    assert len(result) <= 2
-    assert 0 in result  # Highest ratio
-```
-
-Run tests:
-```bash
-pytest tests/
-```
-
-### Integration Testing
-```bash
-# Test full pipeline on small subset
-bash scripts/utils/split_dataset.sh --main_split val --split_name kick --dataset HumanML3D
-bash scripts/eval/lcr.sh kick HumanML3D
-# Check outputs in generation/
-```
-
----
-
-## Performance Optimization
-
-### Training
-- Use mixed precision: `--mixed_precision` (if supported)
-- Increase batch size to GPU limit
-- Use multiple GPUs: `torch.nn.DataParallel`
-
-### Evaluation
-- Generate in large batches: `--batch_size 512`
-- Skip visualization: `--skip_viz`
-- Reduce repeat times for faster iteration
-
-### Storage
-- Compress generated motions: `gzip generation/*/feats/*.npy`
-- Clean old W&B runs: `wandb sync --clean`
-
----
 
 This developer guide should help you navigate and extend the codebase. For specific implementation questions, refer to the inline comments in the source files or consult the original MoMask and TMR repositories.

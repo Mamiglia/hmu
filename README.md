@@ -39,31 +39,19 @@ The repository provides:
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/Mamiglia/hmu.git
+   git clone --recurse-submodules https://github.com/Mamiglia/hmu.git
    cd hmu
+   ```   
+   This project depends on two external repositories that should be cloned into the `src/` directory: https://github.com/Mamiglia/momask-codes.git and https://github.com/Mamiglia/TMR.git. if you enable the `--recurse-submodules` flag when cloning this repo you will clone them automatically as well.
    ```
 
-2. **Clone dependencies**
-   
-   This project depends on two external repositories that should be cloned into the `src/` directory:
-   
-   ```bash
-   # Clone MoMask (text-to-motion model)
-   cd src
-   git clone https://github.com/Mamiglia/momask-codes.git
-   
-   # Clone TMR (motion retrieval model)
-   git clone https://github.com/Mamiglia/TMR.git
-   cd ..
-   ```
-
-3. **Create and activate conda environment**
+2. **Create and activate conda environment**
    ```bash
    conda create -n momask python=3.8
    conda activate momask
    ```
 
-4. **Install dependencies**
+3. **Install dependencies**
    ```bash
    # Install MoMask requirements
    pip install -r src/momask_codes/requirements.txt
@@ -72,13 +60,6 @@ The repository provides:
    conda create -n TMR python=3.9
    conda activate TMR
    pip install -r src/TMR/requirements.txt
-   ```
-
-5. **Set environment variable**
-   
-   Add this to your `~/.bashrc` or `~/.zshrc`:
-   ```bash
-   export CONDA_PATH=/path/to/your/conda  # e.g., ~/miniconda3
    ```
 
 ---
@@ -172,6 +153,8 @@ glove/
 1. **Pre-trained Checkpoints**
    - Download from MoMask repository: [momask-codes checkpoints](https://github.com/Mamiglia/momask-codes)
    - Place in `checkpoints/HumanML3D/` and `checkpoints/Motion-X/`
+   - `bash src/momask_codes/prepare/download_models.sh`
+
 
 2. **Datasets**
    - **HumanML3D**: [Official repository](https://github.com/EricGuo5513/HumanML3D)
@@ -181,10 +164,12 @@ glove/
 3. **GloVe Embeddings**
    - Download GloVe 840B 300d embeddings
    - Convert to `.npy` format and place in `glove/`
+   - `bash src/momask_codes/prepare/download_glove.sh`
+   - `bash src/momask_codes/prepare/download_evaluator.sh`
 
 4. **TMR Checkpoints**
    - Download from [TMR repository](https://github.com/Mathux/TMR)
-   - Place in `src/TMR/logs/`
+   - Place in `src/TMR/models/`
 
 ---
 

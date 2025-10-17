@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
 
+# Show help message
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "Usage: $0 <split_name> [dataset] [--tmr]"
+    echo ""
+    echo "Apply UCE and RECE unlearning methods."
+    echo ""
+    echo "Arguments:"
+    echo "  split_name             Concept split name (e.g., violence, kick)"
+    echo "  dataset                Dataset name (default: HumanML3D)"
+    echo ""
+    echo "Options:"
+    echo "  --tmr                  Use TMR-filtered splits"
+    echo "  -h, --help             Show this help message"
+    echo ""
+    echo "Example:"
+    echo "  $0 violence HumanML3D"
+    exit 0
+fi
+
 source $CONDA_PATH/etc/profile.d/conda.sh
 conda activate momask
 

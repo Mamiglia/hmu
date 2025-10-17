@@ -1,5 +1,24 @@
 #!/usr/bin/env bash
 
+# Show help message
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "Usage: $0 <split_name> [dataset] [--tmr]"
+    echo ""
+    echo "Apply LCR (Latent Code Removal) unlearning method."
+    echo ""
+    echo "Arguments:"
+    echo "  split_name             Concept split name (e.g., violence, kick)"
+    echo "  dataset                Dataset name (default: HumanML3D)"
+    echo ""
+    echo "Options:"
+    echo "  --tmr                  Use TMR-filtered splits"
+    echo "  -h, --help             Show this help message"
+    echo ""
+    echo "Example:"
+    echo "  $0 violence HumanML3D"
+    exit 0
+fi
+
 source $CONDA_PATH/etc/profile.d/conda.sh
 conda activate momask
 
@@ -19,6 +38,15 @@ for arg in "$@"; do
         shift
     fi
 done
+
+if [ -z "$split_name" ]; then
+    echo "Error: split_name argument is required."
+    exit 1
+fi
+if [ -z "$dataset" ]; then
+    echo "Error: dataset argument is required."
+    exit 1
+fi
 
 # Set forget_texts based on split_name
 forget_texts=$(jq --arg dataset "$dataset" --arg split_name "$split_name" -r '.splits[$dataset][$split_name].forget_texts[]' assets/splits.json | tr '\n' ' ')

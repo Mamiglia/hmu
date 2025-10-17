@@ -1,5 +1,15 @@
 #! /usr/bin/env bash
 
+# Show help message
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "Usage: $0"
+    echo ""
+    echo "Train full text-to-motion pipeline (VQ-VAE + Transformers)."
+    echo ""
+    echo "Note: This script is configured for SLURM. Edit for local execution."
+    exit 0
+fi
+
 #SBATCH --account=IscrC_MU4M
 #SBATCH --partition boost_usr_prod
 #SBATCH --time=23:59:59

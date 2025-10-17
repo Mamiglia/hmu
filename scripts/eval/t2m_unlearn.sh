@@ -1,12 +1,30 @@
 #!/bin/bash
+
+# Show help message
+if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    echo "Usage: $0 [options]"
+    echo ""
+    echo "Evaluate unlearning methods on text-to-motion models."
+    echo ""
+    echo "Options:"
+    echo "  --dataset <name>       Dataset name (default: HumanML3D)"
+    echo "  --split_name <name>    Concept split name (default: violence)"
+    echo "  --ckpt <file>          Checkpoint file (default: base.tar)"
+    echo "  --method <name>        Method name for logging (default: unnamed)"
+    echo "  --name <name>          Run name override (default: same as method)"
+    echo "  --max_rank <num>       Max rank for retrieval (default: 100)"
+    echo "  -h, --help             Show this help message"
+    exit 0
+fi
+
 source $CONDA_PATH/etc/profile.d/conda.sh
 conda activate momask
 
 dataset="HumanML3D"  # Default dataset
 split_name="violence"  # Default split name
 ckpt="base.tar"  # Default checkpoint
-tmr=""  # Default TMR suffix
-max_rank=100  # Default max rank for retrieval
+tmr=""  # Default TMR suffix # KEEP DISABLE
+max_rank=100  # Default max rank for TMR retrieval
 method="unnamed"  # Default method name
 
 # Parse command line arguments
@@ -24,14 +42,14 @@ while [[ $# -gt 0 ]]; do
             ckpt="$2"
             shift 2
             ;;
-        --max_rank)
-            max_rank="$2"
-            shift 2
-            ;;
-        --tmr)
-            tmr="-tmr"
-            shift
-            ;;
+        # --max_rank)
+        #     max_rank="$2"
+        #     shift 2
+        #     ;;
+        # --tmr)
+        #     tmr="-tmr" 
+        #     shift
+        #     ;;
         --method)
             method="$2"
             shift 2
@@ -68,34 +86,38 @@ export WANDB_TAGS="$method,${split_name}${tmr},$dataset"
 export WANDB_RUN_GROUP="$name-$dataset-$split_name"
 
 echo ">>> Evaluating $ext on $dataset/$split_name..."
-echo ">>> Processing Forget set for $ext"
-python -m src.methods.gen_t2m_batch \
-    --dataset_name $dataset \
-    --run_name $ext \
-    --ckpt $ckpt \
-    --skip_viz \
-    --repeat_times 10 \
-    --batch_size 512 \
-    --seed $seed \
-    --split $forgetset_test
 
-echo ">>> Running Detector on Forget set for $ext"
-out="$PWD/generation/${ext}"
-records="$out/records.json"
-conda activate TMR
+# --- NCS Evaluation --- DEPRECATED ---
+# echo ">>> Processing Forget set for $ext"
+# python -m src.methods.gen_t2m_batch \
+#     --dataset_name $dataset \
+#     --run_name $ext \
+#     --ckpt $ckpt \
+#     --skip_viz \
+#     --repeat_times 10 \
+#     --batch_size 512 \
+#     --seed $seed \
+#     --split $forgetset_test
 
-cd src/TMR
-python m2m_retrieval.py \
-    path=$records \
-    top_k=$max_rank
-cd ../../
+# echo ">>> Running Detector on Forget set for $ext"
+# out="$PWD/generation/${ext}"
+# records="$out/records.json"
+# conda activate TMR
 
-conda activate momask
+# cd src/TMR
+# python m2m_retrieval.py \
+#     path=$records \
+#     top_k=$max_rank
+# cd ../../
 
-python -m src.eval.ncs_compute \
-    --file $records \
-    --run_name $ext \
-    --forget_kw $forget_texts
+# conda activate momask
+
+# python -m src.eval.ncs_compute \
+#     --file $records \
+#     --run_name $ext \
+#     --forget_kw $forget_texts
+
+# --- T2M-U Evaluation ---
 
 echo ">>> Evaluating $ext on Retain"
 python -m src.eval.t2m_unlearn \

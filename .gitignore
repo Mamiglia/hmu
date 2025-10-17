@@ -8,3 +8,7 @@ glove/
 __pycache__/
 
 wandb
+
+assets/
+legacy/
+!assets/*.json

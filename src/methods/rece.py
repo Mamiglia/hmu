@@ -23,6 +23,15 @@ from src.momask_codes.utils.paramUtil import t2m_kinematic_chain
 from src.momask_codes.utils.plot_script import plot_3d_motion
 from src.momask_codes.visualization.joints2bvh import Joint2BVHConvertor
 
+def get_model_loaders(model_name):
+    if model_name == "bamm":
+        from src.bamm.models.loaders import load_res_model, load_trans_model, load_vq_model
+        print("Using BAMM models")
+    else:
+        from src.momask_codes.models.loaders import load_res_model, load_trans_model, load_vq_model
+        print("Using Momask models")
+    return load_res_model, load_trans_model, load_vq_model
+
 clip_version = "ViT-B/32"
 
 # debugpy.listen(("localhost", 5678))
@@ -200,6 +209,7 @@ def save_model_to_ckpt(
 
 
 def load(opt):
+    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.model_name)
     opt.device = torch.device("cpu" if opt.gpu_id == -1 else "cuda:" + str(opt.gpu_id))
 
     dim_pose = 251 if opt.dataset_name == "kit" else 263
@@ -361,6 +371,7 @@ if __name__ == "__main__":
     parser.parser.add_argument('--target_text', type=str, default="")
     parser.parser.add_argument('--epochs', type=int, default=3)
     parser.parser.add_argument('--ckpt', type=str, default="base.tar")
+    parser.parser.add_argument('--model_name', type=str, default='momask', help='name of the model to use')
     opt = parser.parse()
     fixseed(opt.seed)
 

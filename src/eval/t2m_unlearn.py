@@ -13,7 +13,17 @@ from src.momask_codes.motion_loaders.dataset_motion_loader import get_dataset_mo
 from src.momask_codes.models.t2m_eval_wrapper import EvaluatorModelWrapper
 from src.momask_codes.utils.fixseed import fixseed
 
-from src.eval.eval_fn_t2m import eval_t2m_unlearn 
+from src.eval.eval_fn_t2m import eval_t2m_unlearn
+
+
+def get_model_loaders(model_name):
+    if 'bamm' in model_name:
+        from src.bamm.models.loaders import load_res_model, load_trans_model, load_vq_model
+        print("Using BAMM models")
+    else:
+        from src.momask_codes.models.loaders import load_res_model, load_trans_model, load_vq_model
+        print("Using Momask models")
+    return load_res_model, load_trans_model, load_vq_model
 
 
 @torch.no_grad()
@@ -22,6 +32,8 @@ def main():
     add_eval_args(parser.parser)
     opt = parser.parse()
     fixseed(opt.seed)
+
+    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.name)
     opt.device = torch.device("cpu" if opt.gpu_id == -1 else f"cuda:{opt.gpu_id}")
     if '-w-' in opt.split:
         split_tag = 'forget'
@@ -121,6 +133,7 @@ def add_eval_args(parser):
     parser.add_argument('--toxic_terms', type=str, nargs='+', default=[],
                         help='list of toxic terms to mask in the text')
     parser.add_argument('--method', type=str, help='method used for unlearning')
+    parser.add_argument('--model_name', type=str, default='momask', help='name of the model to use')
 
 if __name__ == "__main__":
     main()

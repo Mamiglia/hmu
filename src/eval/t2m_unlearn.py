@@ -6,7 +6,6 @@ import wandb
 from pathlib import Path
 import torch
 
-from src.momask_codes.models.loaders import load_res_model, load_trans_model, load_vq_model
 from src.momask_codes.options.eval_option import EvalT2MOptions
 from src.momask_codes.utils.get_opt import get_opt
 from src.momask_codes.motion_loaders.dataset_motion_loader import get_dataset_motion_loader

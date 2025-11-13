@@ -23,14 +23,7 @@ from src.momask_codes.utils.paramUtil import t2m_kinematic_chain
 from src.momask_codes.utils.plot_script import plot_3d_motion
 from src.momask_codes.visualization.joints2bvh import Joint2BVHConvertor
 
-def get_model_loaders(model_name):
-    if model_name == "bamm":
-        from src.bamm.models.loaders import load_res_model, load_trans_model, load_vq_model
-        print("Using BAMM models")
-    else:
-        from src.momask_codes.models.loaders import load_res_model, load_trans_model, load_vq_model
-        print("Using Momask models")
-    return load_res_model, load_trans_model, load_vq_model
+from src.eval.t2m_unlearn import get_model_loaders
 
 clip_version = "ViT-B/32"
 
@@ -209,7 +202,7 @@ def save_model_to_ckpt(
 
 
 def load(opt):
-    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.model_name)
+    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.name)
     opt.device = torch.device("cpu" if opt.gpu_id == -1 else "cuda:" + str(opt.gpu_id))
 
     dim_pose = 251 if opt.dataset_name == "kit" else 263

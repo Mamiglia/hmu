@@ -13,6 +13,7 @@ if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     echo "  --method <name>        Method name for logging (default: unnamed)"
     echo "  --name <name>          Run name override (default: same as method)"
     echo "  --max_rank <num>       Max rank for retrieval (default: 100)"
+    echo "  --mtrans_name <name>   Motion transformer name (default: mtrans)"
     echo "  -h, --help             Show this help message"
     exit 0
 fi
@@ -58,6 +59,10 @@ while [[ $# -gt 0 ]]; do
             name="$2"
             shift 2
             ;;
+        --mtrans_name)
+            mtrans_name="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown argument: $1"
             exit 1
@@ -66,10 +71,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 name=${name:-$method}
+mtrans_name=${mtrans_name:-"mtrans"}
 
 seed=$RANDOM  # Random seed for unique run name
 # ext="${method}_${dataset}_${split_name}${tmr}_$seed"
-ext="${name}_${dataset}_${split_name}${tmr}"
+ext="${mtrans_name}_${name}_${dataset}_${split_name}${tmr}"
 
 prompts_f="assets/qualitatives_${dataset}.txt"
 
@@ -78,7 +84,7 @@ forgetset_test="kw_splits/test-w-${split_name}${tmr}"
 
 forget_texts=$(jq --arg dataset "$dataset" --arg split_name "$split_name" -r '.splits[$dataset][$split_name].forget_texts[]' assets/splits.json | tr '\n' ' ')
 
-export WANDB_MODE=online
+# export WANDB_MODE=online
 export WANDB_PROJECT="hmu2"
 export WANDB_NAME="$ext"
 export WANDB_RUN_ID="$ext"
@@ -119,14 +125,15 @@ echo ">>> Evaluating $ext on $dataset/$split_name..."
 
 # --- T2M-U Evaluation ---
 
-echo ">>> Evaluating $ext on Retain"
-python -m src.eval.t2m_unlearn \
+echo ">>> Generating qualitatives on $dataset..."
+python -m src.momask_codes.gen_t2m \
     --dataset_name $dataset \
-    --ckpt $ckpt \
     --run_name $ext \
-    --toxic_terms $forget_texts \
+    --text_path $prompts_f \
+    --repeat_times 1 \
     --seed $seed \
-    --split $retainset_test
+    --name $mtrans_name \
+    --ckpt $ckpt
 
 echo ">>> Evaluating $ext on Forget"
 python -m src.eval.t2m_unlearn \
@@ -136,13 +143,16 @@ python -m src.eval.t2m_unlearn \
     --toxic_terms $forget_texts \
     --seed $seed \
     --split $forgetset_test \
-    --method $method
+    --name $mtrans_name \
+    --method $method 
 
-echo ">>> Generating qualitatives on $dataset..."
-python -m src.momask_codes.gen_t2m \
+
+echo ">>> Evaluating $ext on Retain"
+python -m src.eval.t2m_unlearn \
     --dataset_name $dataset \
+    --ckpt $ckpt \
     --run_name $ext \
-    --text_path $prompts_f \
-    --repeat_times 1 \
+    --toxic_terms $forget_texts \
     --seed $seed \
-    --ckpt $ckpt
+    --name $mtrans_name \
+    --split $retainset_test

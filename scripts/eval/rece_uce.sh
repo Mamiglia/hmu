@@ -39,6 +39,14 @@ for arg in "$@"; do
     fi
 done
 
+mtrans_name='mtrans'
+for arg in "$@"; do
+    if [ "$arg" = "--bamm" ]; then
+        mtrans_name='bamm'
+        shift
+    fi
+done
+
 epochs=1
 
 
@@ -52,12 +60,12 @@ data_root="dataset/${dataset}"
 
 seed=$RANDOM
 
-for preserve_scale in 0.75 1 1.5 2 5; do
+for preserve_scale in 0.5; do
     echo ">>> Unlearning MoMask with UCE and RECE on $dataset with preserve_scale=$preserve_scale..."
     START=$(date +%s%3N)
     python -m src.methods.rece \
         --dataset_name $dataset \
-        --name mtrans \
+        --name $mtrans_name \
         --res_name rtrans \
         --vq_name rvq \
         --ext "UCE_RECE_${dataset}" \
@@ -78,12 +86,14 @@ for preserve_scale in 0.75 1 1.5 2 5; do
         --split_name "$split_name" \
         --method RECE \
         --name "RECE${epochs}_$preserve_scale" \
-        --ckpt "RECE${epochs}_$preserve_scale.tar"
+        --ckpt "RECE${epochs}_$preserve_scale.tar" \
+        --mtrans_name "$mtrans_name" 
 
     bash scripts/eval/t2m_unlearn.sh \
         --dataset "$dataset" \
         --split_name "$split_name" \
         --method UCE \
         --name "UCE_$preserve_scale" \
-        --ckpt "UCE_$preserve_scale.tar"
+        --ckpt "UCE_$preserve_scale.tar" \
+        --mtrans_name "$mtrans_name" 
 done

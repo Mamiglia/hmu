@@ -4,7 +4,8 @@ from os.path import join as pjoin
 import torch
 import torch.nn.functional as F
 
-from src.momask_codes.models.loaders import load_res_model, load_trans_model, load_vq_model, load_len_estimator
+from src.eval.t2m_unlearn import get_model_loaders
+from src.momask_codes.models.loaders import load_len_estimator
 from src.momask_codes.motion_loaders.dataset_motion_loader import get_dataset_motion_loader
 from src.momask_codes.models.mask_transformer.transformer import MaskTransformer, ResidualTransformer
 from src.momask_codes.models.vq.model import RVQVAE, LengthEstimator
@@ -64,7 +65,7 @@ if __name__ == '__main__':
     model_opt_path = pjoin(root_dir, 'opt.txt')
     model_opt = get_opt(model_opt_path, device=opt.device)
 
-
+    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.name)
     #######################
     ######Loading RVQ######
     #######################
@@ -156,6 +157,10 @@ if __name__ == '__main__':
                                                 gsample=opt.gumbel_sample)
                 # print(mids)
                 # print(mids.shape)
+                if isinstance(mids, tuple):
+                    mids, token_lens = mids
+                    m_length = token_lens * 4
+                    
                 mids = res_model.generate(mids, captions, token_lens, temperature=1, cond_scale=5)
                 pred_motions = vq_model.forward_decoder(mids)
 

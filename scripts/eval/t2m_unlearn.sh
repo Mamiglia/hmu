@@ -63,6 +63,10 @@ while [[ $# -gt 0 ]]; do
             mtrans_name="$2"
             shift 2
             ;;
+        --cuda)
+            cuda="$2"
+            shift 2
+            ;;
         *)
             echo "Unknown argument: $1"
             exit 1
@@ -72,6 +76,7 @@ done
 
 name=${name:-$method}
 mtrans_name=${mtrans_name:-"mtrans"}
+cuda=${cuda:-0}
 
 seed=$RANDOM  # Random seed for unique run name
 # ext="${method}_${dataset}_${split_name}${tmr}_$seed"
@@ -133,6 +138,7 @@ python -m src.momask_codes.gen_t2m \
     --repeat_times 1 \
     --seed $seed \
     --name $mtrans_name \
+    --gpu_id $cuda \
     --ckpt $ckpt
 
 echo ">>> Evaluating $ext on Forget"
@@ -144,7 +150,8 @@ python -m src.eval.t2m_unlearn \
     --seed $seed \
     --split $forgetset_test \
     --name $mtrans_name \
-    --method $method 
+    --gpu_id $cuda \
+    --method $method
 
 
 echo ">>> Evaluating $ext on Retain"
@@ -155,4 +162,5 @@ python -m src.eval.t2m_unlearn \
     --toxic_terms $forget_texts \
     --seed $seed \
     --name $mtrans_name \
+    --gpu_id $cuda \
     --split $retainset_test

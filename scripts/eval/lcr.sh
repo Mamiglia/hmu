@@ -66,7 +66,7 @@ forgetset_train="kw_splits/train_val-w-${split_name}${tmr}"
 
 data_root="dataset/${dataset}"
 
-for code_prune in 4;  # code_prune is the number of codes to prune
+for code_prune in 8 16 32 64;  # code_prune is the number of codes to prune
 do
     # code_prune is the number of codes, not the layers
     pruned_model_file="lcr${code_prune}_${dataset}_${split_name}${tmr}"

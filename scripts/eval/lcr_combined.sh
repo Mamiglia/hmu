@@ -36,6 +36,9 @@ case $split_name in
         forget_texts=$(jq --arg dataset "$dataset" --arg split_name "$split_name" -r '.splits[$dataset][$split_name].forget_texts[]' assets/splits.json | tr '\n' ' ')
         split_names=("kick" "punch_jab_box_hit_beat")
         code_prunes=(16 8)
+        # For Motion-X, use:
+        # split_names=("kick" "punch_jab_box_hit_beat" "gun_shoot" "martial_arts" "weapons")
+	    # code_prunes=(16 8 4 16 4)
         ;;
     *)
         echo "Error: Unknown split name '$split_name'" >&2

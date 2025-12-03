@@ -32,3 +32,8 @@ ln -sr bamm/model/latest.tar bamm/model/base.tar
 
 mv bamm/opt.txt bamm/opt.txt.bak
 cat bamm/opt.txt.bak | sed 's/rvq_nq6_dc512_nc512_noshare_qdp0.2/rvq/' | sed 's/2024-02-14-14-27-29_8_GPT_officialTrans_2iterPrdictEnd/bamm/' | sed 's|log/t2m|checkpoints/t2m|' > bamm/opt.txt
+
+cd ../../
+ln -sr checkpoints/t2m/ checkpoints/HumanML3D
+
+mkdir -p dataset/

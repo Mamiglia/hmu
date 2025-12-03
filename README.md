@@ -121,6 +121,9 @@ LCR is a **training-free** method that works directly on discrete latent codes, 
 
 ### Environment and Checkpoints
 ```bash
+git clone --recurse-submodules https://github.com/Mamiglia/hmu.git
+cd hmu
+
 conda create -n momask python=3.8
 conda activate momask
 # Install requirements

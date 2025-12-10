@@ -3,7 +3,7 @@
 <div align="center">
 
 [![arXiv](https://img.shields.io/badge/arXiv-2503.18674-b31b1b.svg?style=for-the-badge&logoColor=white)](https://arxiv.org/abs/2503.18674)
-[![Project Page](https://img.shields.io/badge/Project-Page-orange?style=for-the-badge&logo=firefox-browser&logoColor=white)](https://pinlab.org/hmu)
+[![Project Page](https://img.shields.io/badge/Project-Page-orange?style=for-the-badge&logo=firefox-browser&logoColor=white)](https://www.pinlab.org/hmu)
 [![AAAI'26](https://img.shields.io/badge/AAAI-26-blue?style=for-the-badge)](TODO)
 
 **[Edoardo De Matteis]()\* · [Matteo Migliarini]()\* · [Alessio Sampieri]() · [Indro Spinelli]() · [Fabio Galasso]()**
@@ -49,7 +49,7 @@ We propose **LCR**, a training-free method that operates directly on the discret
 |:-------------------------:|:----------------------:|
 | ![before_punch_kick](assets/imgs/momask_3.gif) | ![after_punch_kick](assets/imgs/lcr_3.gif) |
 
-You can check out more qualitative results on out [website](https://pinlab.org/hmu).
+You can check out more qualitative results on out [website](https://www.pinlab.org/hmu).
 
 ---
 
@@ -164,14 +164,10 @@ bash scripts/eval/lcr.sh violence HumanML3D
 If you find this work useful, please cite:
 
 ```bibtex
-@article{dematteis2025humanmotionunlearning,
-  title={Human Motion Unlearning}, 
-  author={Edoardo De Matteis and Matteo Migliarini and Alessio Sampieri and Indro Spinelli and Fabio Galasso},
-  year={2025},
-  eprint={2503.18674},
-  archivePrefix={arXiv},
-  primaryClass={cs.CV},
-  url={https://arxiv.org/abs/2503.18674}
+@article{dematteis2026hmu,
+  title={Human Motion Unlearning},
+  journal={Proceedings of the AAAI Conference on Artificial Intelligence},
+  author={De Matteis Edoardo, Migliarini Matteo, Sampieri Alessio, Spinelli Indro, Galasso Fabio}, year={2026}
 }
 ```
 

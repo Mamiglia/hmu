@@ -9,6 +9,4 @@ __pycache__/
 
 wandb
 
-assets/
 legacy/
-!assets/*.json

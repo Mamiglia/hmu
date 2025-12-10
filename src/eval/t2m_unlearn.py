@@ -6,6 +6,7 @@ import wandb
 from pathlib import Path
 import torch
 
+from src.momask_codes.models.loaders import load_res_model, load_trans_model, load_vq_model
 from src.momask_codes.options.eval_option import EvalT2MOptions
 from src.momask_codes.utils.get_opt import get_opt
 from src.momask_codes.motion_loaders.dataset_motion_loader import get_dataset_motion_loader
@@ -16,7 +17,7 @@ from src.eval.eval_fn_t2m import eval_t2m_unlearn
 
 
 def get_model_loaders(model_name):
-    if 'bamm' in model_name:
+    if model_name == "bamm":
         from src.bamm.models.loaders import load_res_model, load_trans_model, load_vq_model
         print("Using BAMM models")
     else:
@@ -32,7 +33,7 @@ def main():
     opt = parser.parse()
     fixseed(opt.seed)
 
-    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.name)
+    load_res_model, load_trans_model, load_vq_model = get_model_loaders(opt.model_name)
     opt.device = torch.device("cpu" if opt.gpu_id == -1 else f"cuda:{opt.gpu_id}")
     if '-w-' in opt.split:
         split_tag = 'forget'

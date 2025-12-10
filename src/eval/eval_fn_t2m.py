@@ -84,14 +84,9 @@ def eval_t2m_unlearn(
                     temperature=temperature,
                     topk_filter_thres=topkr,
                 gsample=gsample,
-                force_mask=force_mask,)
-                
-                if isinstance(mids, tuple):
-                    mids, _ = mids
-                    mids, pred_len = trans.pad_when_end(mids)
-                    pred_len = pred_len.clamp(1, 49) * 4
-                    m_length = pred_len # overwrite m_length based on predicted length
-                    
+                force_mask=force_mask,
+            )[0]                # motion_codes = motion_codes.permute(0, 2, 1)
+                # mids.unsqueeze_(-1)
                 pred_ids = res_model.generate(
                     mids.cuda(),
                     clip_text,
@@ -126,14 +121,8 @@ def eval_t2m_unlearn(
                 temperature=temperature,
                 topk_filter_thres=topkr,
                 force_mask=force_mask,
-            )
-                
-            if isinstance(mids, tuple):
-                mids, _ = mids
-                mids, pred_len = trans.pad_when_end(mids)
-                pred_len = pred_len.clamp(1, 49) * 4
-                m_length = pred_len # overwrite m_length based on predicted length
-                    
+            )[0]
+
             # motion_codes = motion_codes.permute(0, 2, 1)
             # mids.unsqueeze_(-1)
             pred_ids = res_model.generate(

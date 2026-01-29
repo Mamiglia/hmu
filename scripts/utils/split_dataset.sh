@@ -109,6 +109,7 @@ echo ">>> Naive splits for $main_split with forget texts: $forget_texts"
 if [[ ! -f "$base_path/$retainset.txt" || ! -f "$base_path/$forgetset.txt" ]]; then
     echo ">>> Split files don't exist, creating them now..."
     # Clear existing files if they exist but might be incomplete
+    mkdir -p $base_path/kw_splits
     > $base_path/$forgetset.txt
     > $base_path/$retainset.txt
 

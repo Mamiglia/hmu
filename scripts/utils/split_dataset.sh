@@ -106,27 +106,30 @@ echo ">>> Naive splits for $main_split with forget texts: $forget_texts"
 # This code block creates the splits based on keyword occurrence
 # It's all implemented in bash!
 # Only create splits if they don't already exist
+rm -rf "$base_path/kw_splits"
 if [[ ! -f "$base_path/$retainset.txt" || ! -f "$base_path/$forgetset.txt" ]]; then
     echo ">>> Split files don't exist, creating them now..."
     # Clear existing files if they exist but might be incomplete
-    mkdir -p $base_path/kw_splits
-    > $base_path/$forgetset.txt
-    > $base_path/$retainset.txt
+    mkdir -p "$base_path/kw_splits"
+    > "$base_path/$forgetset.txt"
+    > "$base_path/$retainset.txt"
 
     total_files=$(wc -l < "$base_path/$main_split.txt")
 
     # Create base retainset:
-    # Use pv to show progress while processing the file
-    pv -l -s "$total_files" < "$base_path/$main_split.txt" | while IFS= read -r id; do
-        matching_lines=$(grep -Ec "$search_pattern" "$base_path/texts/${id}.txt")
-        total_lines=$(wc -l < "$base_path/texts/${id}.txt")
+    while IFS= read -r id; do
+        [ -z "$id" ] && continue
+        matching_lines=$(grep -Ec "$search_pattern" "$base_path/texts/${id}.txt" 2>/dev/null)
+        matching_lines=${matching_lines:-0}
+        total_lines=$(wc -l < "$base_path/texts/${id}.txt" 2>/dev/null || echo 0)
+        # echo $total_lines , $matching_lines , $min_occurence
         if [ "$matching_lines" -ge "$min_occurence" ]; then
-            echo "$id" >> $base_path/$forgetset.txt
+            echo "$id" >> "$base_path/$forgetset.txt"
         else
-            echo "$id" >> $base_path/$retainset.txt
+            echo "$id" >> "$base_path/$retainset.txt"
         fi
-    done
-    
+    done < "$base_path/$main_split.txt"
+
     # Count and print the sizes
 else
     echo ">>> Split files already exist, skipping creation"

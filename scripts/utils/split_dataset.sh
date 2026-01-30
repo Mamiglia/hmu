@@ -106,7 +106,6 @@ echo ">>> Naive splits for $main_split with forget texts: $forget_texts"
 # This code block creates the splits based on keyword occurrence
 # It's all implemented in bash!
 # Only create splits if they don't already exist
-rm -rf "$base_path/kw_splits"
 if [[ ! -f "$base_path/$retainset.txt" || ! -f "$base_path/$forgetset.txt" ]]; then
     echo ">>> Split files don't exist, creating them now..."
     # Clear existing files if they exist but might be incomplete

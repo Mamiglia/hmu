@@ -83,9 +83,9 @@ def eval_t2m_unlearn(
                     cond_scale,
                     temperature=temperature,
                     topk_filter_thres=topkr,
-                gsample=gsample,
-                force_mask=force_mask,
-            )[0]                # motion_codes = motion_codes.permute(0, 2, 1)
+                    gsample=gsample,
+                    force_mask=force_mask,
+                )               # motion_codes = motion_codes.permute(0, 2, 1)
                 # mids.unsqueeze_(-1)
                 pred_ids = res_model.generate(
                     mids.cuda(),

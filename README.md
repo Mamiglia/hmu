@@ -164,10 +164,10 @@ bash scripts/eval/lcr.sh violence HumanML3D
 If you find this work useful, please cite:
 
 ```bibtex
-@article{dematteis2026hmu,
+@inproceedings{dematteis2026hmu,
   title={Human Motion Unlearning},
   journal={Proceedings of the AAAI Conference on Artificial Intelligence},
-  author={De Matteis Edoardo, Migliarini Matteo, Sampieri Alessio, Spinelli Indro, Galasso Fabio}, year={2026}
+  author={De Matteis, Edoardo and Migliarini, Matteo and Sampieri, Alessio and Spinelli, Indro and Galasso, Fabio}, year={2026}
 }
 ```
 

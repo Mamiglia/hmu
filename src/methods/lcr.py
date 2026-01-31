@@ -82,8 +82,7 @@ def main():
     fixseed(args.seed)
     args.device = torch.device("cpu" if args.gpu_id == -1 else f"cuda:{args.gpu_id}")
 
-
-    print("Forget keywords: ", args.split)
+    print("Forget file: ", args.split)
 
     ##### ---- Load Network ---- #####
     vq_opt_path = pjoin(
@@ -108,7 +107,7 @@ def main():
     else:
         if os.path.exists(args.codes_csv):
             # Get codes from the csv file
-            df = pd.read_csv(args.codes_csv, dtype={col: str for col in range(5)})
+            df = pd.read_csv(args.codes_csv, dtype={col: str for col in range(3)})
             print(f"Loaded codes from {args.codes_csv}")
         else:
             # Collect codes from the dataset
@@ -141,6 +140,7 @@ def main():
             kick_codes[[f"codes_{l}:{i}" for i in range(args.seq_len)]].values
             for l in range(args.num_layers)
         ]
+        print(kick_codes[0])
         rest_codes = [
             rest_codes[[f"codes_{l}:{i}" for i in range(args.seq_len)]].values
             for l in range(args.num_layers)
@@ -249,16 +249,17 @@ def collect_codes(dataset, net: RVQVAE, device="cuda"):
     all_codes = [[] for _ in range(6)]
     all_texts = []
     all_names = []
+    all_reps = []
 
     for i, data in enumerate(dataset):
         name = dataset.name_list[i]
         captions = dataset.data_dict[name]["text"]
-        captions = [c["caption"] for c in captions]
-        captions += [""] * (MAX_NUM_CAPTIONS - len(captions))  # pad to 4
+        rep, name = name.split('_', 1)[-1].split('%') 
         all_names.append(
-            name.split('_')[-1]
+            name
         )  # remove extra underscore
-        all_texts.append(captions)
+        all_texts.append(captions[0]['caption'])
+        all_reps.append(rep)
 
         motion = data[4]
         motion = torch.tensor(motion).to(device).unsqueeze(0)
@@ -272,7 +273,8 @@ def collect_codes(dataset, net: RVQVAE, device="cuda"):
     df = pd.DataFrame(
         {
             "name": all_names,
-            **{f"text_{j}": [t[j] for t in all_texts] for j in range(MAX_NUM_CAPTIONS)},
+            "rep": all_reps,
+            "text": all_texts,
             **{
                 f"codes_{l}:{i}": all_codes[l][:, i]
                 for l in range(5)
@@ -288,6 +290,10 @@ def define_positives(df: pd.DataFrame, kw_split_file: str):
     with open(f"{kw_split_file}.txt", "r") as f:
         names = f.read().splitlines()
     df.index = df["name"]
+    print(f"Defining positives from {kw_split_file}.txt with {len(names)} names.")
+    print(f"Sample names: {names[:5]}")
+    
+    print("DataFrame names sample: ", df["name"].tolist()[:5])
 
     # At least one caption should contain the keyword
     positives = df["name"].isin(names)

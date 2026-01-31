@@ -39,10 +39,10 @@ for arg in "$@"; do
     fi
 done
 
-mtrans_name='mtrans'
+model_name='momask'
 for arg in "$@"; do
     if [ "$arg" = "--bamm" ]; then
-        mtrans_name='bamm'
+        model_name='bamm'
         shift
     fi
 done
@@ -95,5 +95,5 @@ do
         --method "LCR" \
         --name "LCR$code_prune" \
         --ckpt "$ckpt" \
-        --mtrans_name ${mtrans_name} 
+        --model_name ${model_name} 
 done

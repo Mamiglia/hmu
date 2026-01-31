@@ -92,37 +92,6 @@ export WANDB_RUN_GROUP="$name-$dataset-$split_name"
 
 echo ">>> Evaluating $ext on $dataset/$split_name..."
 
-# --- NCS Evaluation --- DEPRECATED ---
-# echo ">>> Processing Forget set for $ext"
-# python -m src.methods.gen_t2m_batch \
-#     --dataset_name $dataset \
-#     --run_name $ext \
-#     --ckpt $ckpt \
-#     --skip_viz \
-#     --repeat_times 10 \
-#     --batch_size 512 \
-#     --seed $seed \
-#     --split $forgetset_test
-
-# echo ">>> Running Detector on Forget set for $ext"
-# out="$PWD/generation/${ext}"
-# records="$out/records.json"
-# conda activate TMR
-
-# cd src/TMR
-# python m2m_retrieval.py \
-#     path=$records \
-#     top_k=$max_rank
-# cd ../../
-
-# conda activate momask
-
-# python -m src.eval.ncs_compute \
-#     --file $records \
-#     --run_name $ext \
-#     --forget_kw $forget_texts
-
-# --- T2M-U Evaluation ---
 
 echo ">>> Evaluating $ext on Retain"
 python -m src.eval.t2m_unlearn \
